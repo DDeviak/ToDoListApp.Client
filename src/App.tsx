@@ -1,35 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect } from "react";
+import { Layout, Card, Button, Space } from "antd";
+import Title from "antd/es/typography/Title";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useStore } from "./store/store";
+import { observer } from "mobx-react-lite";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const store = useStore();
+  useEffect(() => {
+    if (
+      !store.userStore.isLoggedIn &&
+      location.pathname !== "/login" &&
+      location.pathname !== "/register"
+    ) {
+      navigate("/login");
+    }
+  });
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Layout>
+      <Layout.Header
+        style={{
+          padding: "1rem",
+          height: "5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          flexDirection: "row",
+        }}
+      >
+        <Link to={"/"}>
+          <Title style={{ color: "white" }} level={1}>
+            To-Do List App
+          </Title>
+        </Link>
+        {store.userStore.user && (
+          <Space>
+            <Title style={{ color: "white" }} level={5}>
+              {`Welcome, ${store.userStore.user.userName}`}
+            </Title>
+            <Button
+              ghost
+              onClick={() => {
+                store.userStore.logout();
+                navigate("/login");
+              }}
+            >
+              Log out
+            </Button>
+          </Space>
+        )}
+      </Layout.Header>
+      <Layout.Content style={{ padding: "3rem", minHeight: "92vh" }}>
+        <Card bordered={true}>
+          <Outlet />
+        </Card>
+      </Layout.Content>
+    </Layout>
+  );
+};
 
-export default App
+export default observer(App);
